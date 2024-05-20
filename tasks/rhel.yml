@@ -1,0 +1,6 @@
+---
+- name: Testing Ansible in os
+  debug:
+    msg:
+      - Hello from {{ ansible_distribution }} {{ ansible_distribution_version }}
+      - Role is still in development.

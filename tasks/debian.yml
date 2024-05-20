@@ -1,0 +1,14 @@
+---
+- name: Testing Ansible in os
+  debug:
+    msg:
+      - Hello from  {{ ansible_distribution }} {{ ansible_distribution_version }}
+      - Hostname is {{ ansible_hostname }}
+
+- include_tasks: debian/preinstall.yml
+- include_tasks: swapmgmt.yml
+  when: swap_test_mode
+  tags: notest
+- include_tasks: debian/apache2.yml
+- include_tasks: debian/mysql.yml
+- include_tasks: debian/php.yml

@@ -1,0 +1,72 @@
+- name: install python mysql support
+  apt:
+    name: python3-mysqldb
+    state: present
+
+- name: install MySql server
+  apt:
+    name: mysql-server
+    state: present
+    update_cache: yes
+
+- name: Start and enable mysql
+  service:
+    name: mysql
+    state: started
+    enabled: yes
+
+##mysql secure installtion####
+
+
+- name: set root password
+  mysql_user:
+    name: root
+    host: "{{ item }}"
+    password: "{{ rootPass }}"
+    check_implicit_admin: yes
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+  with_items:
+    - 127.0.0.1
+    - ::1
+    - localhost
+
+- name: setup config for MySql
+  template: src=my.cnf.j2 dest=~/.my.cnf mode=0600
+
+- name: Get list of hosts for the anonymous user.
+  ansible.builtin.command: mysql -NBe "SELECT Host FROM mysql.user WHERE User = ''"
+  register: mysql_anonymous_hosts
+  changed_when: false
+  check_mode: false
+
+- name: Remove anonymous MySQL users.
+  mysql_user:
+    name: ""
+    host: "{{ item }}"
+    state: absent
+  with_items:
+    - 127.0.0.1
+    - ::1
+    - localhost
+
+- name: Remove MySQL test database.
+  mysql_db:
+    name: 'test'
+    state: absent
+
+- name: Disallow root login remotely
+  ansible.builtin.command: 'mysql -NBe "{{ item }}"'
+  with_items:
+    - DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1')
+  changed_when: false
+
+- name: creating mysql user
+  community.mysql.mysql_user:
+    name: "{{ mysqlUser }}"
+    host: '%'
+    password: "{{ mysqlUserPassword }}"
+    priv: '*.*:ALL'
+    state: present
+
+
+

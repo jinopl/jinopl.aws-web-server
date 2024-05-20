@@ -1,0 +1,42 @@
+---
+# defaults file for jinopl.aws-web-server
+########swap mangement########
+swap_file_path: /swapfile
+swap_file_size_mb: '2048'
+swap_swappiness: "30"
+swap_file_state: present
+swap_file_create_command: "dd if=/dev/zero of={{ swap_file_path }} bs=1M count={{ swap_file_size_mb }}"
+swap_test_mode: false
+
+
+######Apache managment#########
+apache_server_root: /etc/apache2
+httpdUsername: apache
+apacheUsername: www-data
+documentRoot: /var/www/html
+#domain for virtual host
+domain_name: foo.com
+#True if subdomain or false
+ifsubdomain: true
+apache_mods_enabled:
+  - rewrite
+  - ssl
+
+#######Mysql Managment#########
+rootPass: vTdPK0r6aUzAPs&9*&ZCmpYWK77qMxtY=qwex
+mysqlUser: dbguy
+mysqlUserPassword: xz0LiyG5CsdlkhjyS7yigR8HG1W4mkDjI=
+
+
+########php###############
+remi_repo_url: "http://rpms.famillecollet.com/enterprise/remi-release-{{ ansible_distribution_major_version }}.rpm"
+remi_repo_gpg_key_url: "http://rpms.remirepo.net/RPM-GPG-KEY-remi"
+php_version: '7.3'
+php_packages_state: 'present'
+
+#######phpmyadmin############
+phpmyadmin_enablerepo: "remi-php73"
+phpmyadmin_config_file: /etc/phpmyadmin/config.inc.php
+
+########composer###########
+composer_path: /usr/local/bin/composer
