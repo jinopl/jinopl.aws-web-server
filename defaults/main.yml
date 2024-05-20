@@ -10,6 +10,7 @@ swap_test_mode: false
 
 
 ######Apache managment#########
+apache_default_vhost_filename: 000-default
 apache_server_root: /etc/apache2
 httpdUsername: apache
 apacheUsername: www-data
@@ -40,3 +41,13 @@ phpmyadmin_config_file: /etc/phpmyadmin/config.inc.php
 
 ########composer###########
 composer_path: /usr/local/bin/composer
+
+
+#######cloudflare############
+cloudflare_cert_dir: /etc/cloudflare-ssl
+cloudflare_cert_file: testdump.pem
+cloudflare_key_file: testdump.key
+
+#########mysqlbackp#############
+
+backupuser: "ubuntu"

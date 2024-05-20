@@ -1,0 +1,31 @@
+#!/bin/bash
+set -e 
+set -u
+
+
+bkplog=~/mysqlbackup.log
+BACKUP_DIR_S3=mysqlusb/{{ domain_name }}
+BKP_DATE=`date '+%Y-%m-%d_%H:%M'`
+
+function message () {
+    echo "`date '+%Y-%m-%d %H:%M:%S:%s'`:$1"
+
+}
+
+
+
+function fullbackup () {
+
+    mysqldump  db_y2pay_main | /usr/local/bin/aws s3 cp - "s3://${BACKUP_DIR_S3}/db_voipgulf_online_db_${BKP_DATE}.sql" --region me-south-1 
+
+}
+
+message "starting mysql backup " >> $bkplog
+
+fullbackup 
+
+if [ $? == 0 ]; then
+    message "backup suceessful" >> $bkplog
+else
+    message "backup failure" >> $bkplog
+fi

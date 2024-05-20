@@ -1,0 +1,33 @@
+<VirtualHost *:80>
+    DocumentRoot {{ documentRoot }}
+    ServerName {{ domain_name }}
+    ServerAlias www.{{ domain_name }}
+    
+    <Directory "{{ documentRoot }}">
+        Options Indexes FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+</VirtualHost>
+
+<VirtualHost *:443>
+
+    DocumentRoot {{ documentRoot }}
+    ServerName {{ domain_name }}
+    ServerAlias www.{{ domain_name }}
+
+   <Directory "{{ documentRoot }}">
+        Options Indexes FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+
+  CustomLog /var/log/apache2/{{ domain_name }}-access.log combined
+  ErrorLog /var/log/apache2/{{ domain_name }}-error.log
+
+  # Example SSL configuration
+  SSLEngine on
+  SSLCertificateFile "/etc/cloudflare-ssl/{{ domain_name }}.pem"
+  SSLCertificateKeyFile "/etc/cloudflare-ssl/{{ domain_name }}.key"
+</VirtualHost>

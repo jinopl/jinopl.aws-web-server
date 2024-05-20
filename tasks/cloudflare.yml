@@ -1,0 +1,89 @@
+#cloudflare
+# ssl config
+# strict  mode
+#mysqlbkp
+# copy script
+# aws cli install
+# my.cnf
+# crontab
+#sql mode
+#install php mcrypt
+
+#cloudflare
+- name: Create directory to store ssl certificates - cloudflare
+  ansible.builtin.file:
+    path: "{{ cloudflare_cert_dir }}"
+    state: directory
+    owner: "{{ apacheUsername }}"
+    group: "{{ apacheUsername }}"
+    mode: '0655'
+
+- name: copy cloudflare ssl certs from local to remote server
+  ansible.builtin.copy:
+    src: "{{ cloudflare_cert_file }}"
+    dest: "{{ cloudflare_cert_dir }}/{{ domain_name }}.pem"
+    owner: "{{ apacheUsername }}"
+    group: "{{ apacheUsername }}"
+    mode: '0655'
+
+
+- name: copy cloudflare ssl key from local to remote server
+  ansible.builtin.copy:
+    src: "{{ cloudflare_key_file }}"
+    dest: "{{ cloudflare_cert_dir }}/{{ domain_name }}.key"
+    owner: "{{ apacheUsername }}"
+    group: "{{ apacheUsername }}"
+    mode: '0655'
+
+- name: Setting up ssl virtual host
+  template:
+    src: vhost-ssl.j2
+    dest: "/etc/apache2/sites-available/{{ domain_name }}.conf"
+    force: yes
+  notify: restart apache2
+  tags: notest
+
+- name: Remove default vhost in sites-enabled.
+  file:
+    path: "/etc/apache2/sites-enabled/{{ apache_default_vhost_filename }}.conf"
+    state: absent
+  notify: restart apache2
+
+#mysqlbkp
+
+- name: Setting up mysql backup script
+  template:
+    src: mybackup.sh.j2
+    dest: "/home/{{ backupuser}}/mysqlbkp.sh"
+    force: no
+    owner: "{{ backupuser }}"
+    group: "{{ backupuser }}"
+    mode: '0750'
+  tags: notest
+
+- name: Download the awscli bundle.
+  get_url: url=https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip dest=/tmp/awscli-bundle.zip
+  register: aws_cli_download_bundle
+
+- name: Unarchive the installer.
+  unarchive: src=/tmp/awscli-bundle.zip dest=/tmp copy=no creates=/tmp/awscli-bundle
+  when: aws_cli_download_bundle.changed
+  register: aws_cli_unarchive_installer
+
+- name: Install awscli package.
+  shell: ./tmp/awscli-bundle/install
+  when: aws_cli_unarchive_installer.changed
+
+- name: setup config for MySql user for backup
+  template: 
+    src: user-my.cnf.j2 
+    dest: /home/{{ backupuser}}/.my.cnf
+    mode: '0600'
+  tags: notest
+
+- name: "Schedule cron for mysql backup"
+  ansible.builtin.cron:
+    name: "Mysql backup cron"
+    minute: "0"
+    hour: "1,8,17"
+    job: "bash /home/{{ backupuser}}/mysqlbkp.sh"
