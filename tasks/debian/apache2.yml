@@ -43,7 +43,7 @@
     path: /var/www/html
     state: directory
     recurse: yes
-    owner: "ec2-user"
+    owner: "ubuntu"
     group: "{{ apacheUsername }}"
     mode: '0775'
   notify: restart apache2
